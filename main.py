@@ -12,8 +12,6 @@ import time
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import pandas as pd
-from sklearn.decomposition import PCA
-import plotly.express as px
 import os
 from dotenv import load_dotenv
 
@@ -61,17 +59,17 @@ events_df = pd.read_csv("events.csv")
 events_df["event2embed"] = (
     events_df["name"] + ":" + events_df["description"].astype(str)
 )  # Scraper was unable to extract description for all of the events
-events_df["event_embeddings"] = model.encode(events_df["event2embed"])
+event_embeddings = model.encode(events_df["event2embed"])
 events.add(
-    embeddings=events_df["event_embeddings"],
+    embeddings=event_embeddings,
     metadatas=[
         {
             "name": row["name"],
             "link": row["link"],
-            "tag": get_tag(row["event_embeddings"]),
+            "tag": get_tag(event_embeddings[i]),
             "description": row["description"],
         }
-        for _, row in events_df.iterrows()
+        for i, row in events_df.iterrows()
     ],
     ids=[str(i) for i in range(len(events_df))],
 )
@@ -110,6 +108,53 @@ get_events_tool = StructuredTool.from_function(
 )
 
 ## TODO: Load LLM and bind tool
+
+
+import uuid
+
+from langchain_core.messages import HumanMessage, SystemMessage
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-pro",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+    
+    # other params...
+)
+
+
+memory = MemorySaver()
+app = create_react_agent(
+    llm,
+    tools=[get_events_tool],
+    checkpointer=memory,
+    messages_modifier=SystemMessage(
+        """Your name is Passion Weaver, you are a chatbot which helps youth to identify their interests and find their passions by speaking to them and suggesting relevant events to them.
+        Start by asking the three of the five following questions one at a time:
+        1. What activities or hobbies do you find yourself losing track of time while doing?
+        2. If you had a whole day free with no obligations, what would you most want to spend your time doing?
+        3. What kind of topics do you enjoy learning or talking about, even outside of school or work?
+        4. Are there any problems or causes in the world that you feel strongly about?
+        5. What skills or talents do people often compliment you on, or have you noticed you excel at?
+        
+        After that, use the get_events_tool to get events relevant to the user, and continue the conversation if necessary to gain a better understanding of the user""")
+)
+
+thread_id = uuid.uuid4()
+config = {"configurable": {"thread_id": thread_id}}
+
+
+def chatbot(message:str) -> str:
+    return app.invoke({"messages": [HumanMessage(message)]}, config, stream_mode="values")["messages"][-1].content
+
+
+while True:
+    print(chatbot(input("> ")))
 
 
 
