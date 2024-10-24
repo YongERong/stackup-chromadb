@@ -7,6 +7,7 @@ import dateparser
 from scrapegraphai.graphs import SmartScraperGraph
 from dotenv import load_dotenv
 import nest_asyncio
+import os
 
 nest_asyncio.apply()
 load_dotenv()
@@ -60,7 +61,7 @@ class Event(BaseModel):
 # Define the configuration for the scraping pipeline
 graph_config = {
     "llm": {
-        "api_key": "AIzaSyCQmxiZ74532X72Br0qqU9zeyQT348ya8U",
+        "api_key": os.getenv("GOOGLE_API_KEY"),
         "model": "google_genai/gemini-pro",
     },
     "verbose": True,
