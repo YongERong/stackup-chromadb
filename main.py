@@ -176,7 +176,7 @@ def chatbot(message:str, _history) -> str:
 ## User Interface
 with gr.Blocks() as gradio_interface:
     gr.Image(
-        "Stackup-ChromaDB-AppIcon.png",
+        "assets/Stackup-ChromaDB-AppIcon.png",
         height=100,
         width=100,
         label="app_icon",
