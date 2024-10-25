@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 from langchain_google_genai import ChatGoogleGenerativeAI
+import re
 
 load_dotenv()
 
@@ -73,6 +74,18 @@ events.add(
 end_time = time.time()
 db_setup_time = end_time - start_time
 
+## Santise Titles for Markdown Display
+
+def md_sanitise(text:str):
+
+    MD_SPECIAL_CHARS = "\\`*_{}[]#+-.|"
+
+    for char in text:
+        if char in MD_SPECIAL_CHARS:
+            text = text.replace(char, "\\"+char)
+    return text
+
+
 ## Create tool to retrieve events from events_collection
 class GetEvents(BaseModel):
     input: str = Field(
@@ -92,7 +105,13 @@ def get_events(input: str) -> list[dict]:
     interest_embedding = model.encode(input)
     results = events.query(query_embeddings=interest_embedding, n_results=5)
 
-    return results["metadatas"][0] # May need to neaten the output using markdown
+    formated_events = '\n\n'.join([f"## [{md_sanitise(event["name"])}]({event["link"]})\n{event["tag"]}" for event in results["metadatas"][0]])
+
+    formatted_msg = f"""Here are a few events I would suggest:
+    {formated_events}"""
+
+
+    return formatted_msg # May need to neaten the output using markdown
 
 
 get_events_tool = StructuredTool.from_function(
@@ -103,7 +122,7 @@ get_events_tool = StructuredTool.from_function(
     return_direct=True,
 )
 
-## TODO: Load LLM and bind tool
+## Load LLM and bind tool
 
 
 import uuid
@@ -146,7 +165,11 @@ config = {"configurable": {"thread_id": thread_id}}
 
 
 def chatbot(message:str, _history) -> str:
-    return app.invoke({"messages": [HumanMessage(message)]}, config, stream_mode="values")["messages"][-1].content
+    try:
+        return app.invoke({"messages": [HumanMessage(message)]}, config, stream_mode="values")["messages"][-1].content
+    except Exception as e:
+        print(e)
+        return chatbot(message=message, _history=_history)
 
 
 
@@ -169,7 +192,7 @@ with gr.Blocks() as gradio_interface:
             placeholder="Hey there, I'm a chatbot which helps youth to identify their interests and find their passions by speaking to them and suggesting relevant events to them.",
         ),
         textbox=gr.Textbox(
-            placeholder="Ask me a yes or no question", container=False, scale=7
+            placeholder="Talk to me about what you love to do", container=False, scale=7
         ),
         title="Passion Weaver",
         theme="soft",
@@ -177,5 +200,6 @@ with gr.Blocks() as gradio_interface:
         undo_btn="Edit Previous",
         clear_btn="Clear Chat",
     )
+    gr.Textbox(f"""ChromaDB Setup Time: {db_setup_time:2f}""",label="Performance")
 
 gradio_interface.launch()
