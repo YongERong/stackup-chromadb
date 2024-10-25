@@ -25,10 +25,10 @@ processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
 # TODO#4: Load and preprocess images
 image_paths = [
-    "img/image-01.jpg",  # Eiffel Tower
-    "img/image-02.jpg",  # Pizza
-    "img/image-03.jpeg",  # Polar Bears
-    "img/jens-riesenberg-F7aXZr196MM-unsplash.jpg"
+    "tutorials/chromadb-text-to-image/img/image-01.jpg",  # Eiffel Tower
+    "tutorials/chromadb-text-to-image/img/image-02.jpg",  # Pizza
+    "tutorials/chromadb-text-to-image/img/image-03.jpeg",  # Polar Bears
+    "tutorials/chromadb-text-to-image/img/jens-riesenberg-F7aXZr196MM-unsplash.jpg"
 ]
 
 # Preprocess images and generate embeddings
