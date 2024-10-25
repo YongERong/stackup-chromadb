@@ -17,4 +17,11 @@ The user converses with a chatbot with conversational memory which retrives even
 
 Attempted to make a play on a compass mixed with the colour palette of a passion flower.
 
+
+## Things to Check Out
+- [ ] Mockups and visualisations of vector database at mockups/main.ipynb
+- [ ] Insert a Gemini API key into .env file, following env.example and run main.py to try out the chatbot
+
 ## Future Improvements
+- [ ] Attach to Telegram API
+- [ ] Better scraper module (current module has issues extracting descriptions of the events)
