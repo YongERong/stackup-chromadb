@@ -2,7 +2,7 @@
 A ChromaDB-powered chatbot which helps youth find events related to their interests.
 
 ## Technical Structure of Project
-![Technical Structure Diagram](https://github.com/YongERong/stackup-chromadb/blob/main/Stackup-ChromaDB-Technical.png?raw=True)
+![Technical Structure Diagram](https://github.com/YongERong/stackup-chromadb/blob/main/assets/Stackup-ChromaDB-Technical.png?raw=True)
 
 Event tags with their descriptions were converted into embeddings and stored into a collection. 
 A scraper module created using ScrapeGraphAI was used to traverse a list of links to event pages and deliver a Pydantic object with the event details.
