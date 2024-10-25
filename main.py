@@ -3,10 +3,7 @@ import sys
 
 sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
-import torch
 import chromadb
-from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
 import gradio as gr
 import time
 from sklearn.metrics.pairwise import cosine_similarity
@@ -18,7 +15,6 @@ from dotenv import load_dotenv
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.memory import ConversationBufferMemory
 
 load_dotenv()
 
@@ -149,14 +145,36 @@ thread_id = uuid.uuid4()
 config = {"configurable": {"thread_id": thread_id}}
 
 
-def chatbot(message:str) -> str:
+def chatbot(message:str, _history) -> str:
     return app.invoke({"messages": [HumanMessage(message)]}, config, stream_mode="values")["messages"][-1].content
 
 
-while True:
-    print(chatbot(input("> ")))
 
+with gr.Blocks() as gradio_interface:
+    gr.Image(
+        "Stackup-ChromaDB-Icon.png",
+        height=100,
+        width=100,
+        label="app_icon",
+        show_label=False,
+        show_download_button=False,
+        placeholder="App Icon",
+        show_fullscreen_button=False
+    )
+    gr.ChatInterface(
+        chatbot,
+        chatbot=gr.Chatbot(
+            height=200,
+            placeholder="Hey there, I'm a chatbot which helps youth to identify their interests and find their passions by speaking to them and suggesting relevant events to them.",
+        ),
+        textbox=gr.Textbox(
+            placeholder="Ask me a yes or no question", container=False, scale=7
+        ),
+        title="Passion Weaver",
+        theme="soft",
+        retry_btn=None,
+        undo_btn="Edit Previous",
+        clear_btn="Clear Chat",
+    )
 
-
-
-
+gradio_interface.launch()
