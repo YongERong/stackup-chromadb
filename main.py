@@ -31,7 +31,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 ## Populate tags collection
-tags_df = pd.read_csv("tags.csv", delimiter=":")
+tags_df = pd.read_csv("data/tags.csv", delimiter=":")
 tags_list = tags_df.to_csv(None, sep=":", header=False, index=False).split("\n")
 tags_list = list(filter(bool, tags_list))
 tags_embeddings = model.encode(tags_list)
@@ -51,7 +51,7 @@ def get_tag(event_embedding):
 
 
 ## Populate events collection
-events_df = pd.read_csv("events.csv")
+events_df = pd.read_csv("data/events.csv")
 events_df["event2embed"] = (
     events_df["name"] + ":" + events_df["description"].astype(str)
 )  # Scraper was unable to extract description for all of the events
